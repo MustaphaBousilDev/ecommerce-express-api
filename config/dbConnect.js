@@ -1,6 +1,6 @@
 const {default : mongoose}=require('mongoose');
 
-mongoose.connect(process.env.CONNECTION_MONGO,{
+mongoose.connect(process.env.CONNECTION_MONGOs,{
      useNewUrlParser:true
      })
      .then(()=>console.log('Database Successfuly Connected'))

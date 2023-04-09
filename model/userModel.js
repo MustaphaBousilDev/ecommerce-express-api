@@ -1,7 +1,7 @@
 const mongoose=require('mongoose');
-
+const bcrypt=require('bcryptjs');
 //create schema
-const userSchema=new mongoose.Schema({
+const userSchema=new mongoose.Schema({ 
      first_name:{
           type:String,
           required:[true,'first name is required'],
@@ -45,11 +45,14 @@ const userSchema=new mongoose.Schema({
           default:'https://res.cloudinary.com/dmhcnhtng/image/upload/v1643044376/avatars/default_pic_jeaybr.png',
           trim:true 
      },
-     verified:{
-          type:Boolean,
-          default:false
-     },
+     role:{
+          type:String,
+          default:"user"
+     }
      
 },{timestamps:true})
 
+userSchema.methods.isPasswordMatch=async function(enteredPassword){
+     return await bcrypt.compare(enteredPassword,this.password)
+}
 module.exports=mongoose.model('User',userSchema)
