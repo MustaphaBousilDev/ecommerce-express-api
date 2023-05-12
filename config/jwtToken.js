@@ -1,8 +1,8 @@
 const jwt=require('jsonwebtoken')
 
-const generateToken=(id)=>{
-     return jwt.sign({id},process.env.SECRET_KEY_TOKEN,{
-          expiresIn:'30d'
+const generateToken=(payload,expired)=>{
+     return jwt.sign({payload},process.env.SECRET_KEY_TOKEN,{
+          expiresIn:expired
      })
 
 }

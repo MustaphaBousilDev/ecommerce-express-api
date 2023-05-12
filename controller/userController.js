@@ -4,8 +4,6 @@ const {generateToken}=require('../config/jwtToken')
 //get validation from helper
 const {EmailValidator,PasswordValidator,LengthValidator,USernameValidator}=require('../helpers/validations')
 const bcrypt=require('bcryptjs')
-
-
 const createUser=asyncHandler(async (req,res)=>{
      const {first_name,last_name,username,email,mobile,password,picture}=req.body
      const emaild=await EmailValidator(email)
@@ -20,10 +18,13 @@ const createUser=asyncHandler(async (req,res)=>{
      let  tempUsername=first_name+last_name
      let  newUsername=await USernameValidator(tempUsername)
      const user=new User({first_name,last_name,username:newUsername,email,mobile,password:cryptePassword,picture})
-     user.save().then((saveUser)=>{res.status(200).json({msg:'user created',saveUser})})
-})
-
-//login 
+     user.save().then((saveUser)=>{
+               const token=generateToken({id:saveUser._id.toString()},"7d")
+               res.status(200).json({msg:'user created',
+               saveUser,
+               token:token,
+          })}).catch((error)=>{res.status(400).json({msg:error.message})})
+}) 
 const login=asyncHandler(async (req,res)=>{
      const {email,password}=req.body
      //check if email exist
@@ -38,7 +39,7 @@ const login=asyncHandler(async (req,res)=>{
                mobile:findUser?.mobile,
                picture:findUser?.picture,
                role:findUser?.role,
-               token:generateToken(findUser?._id)
+               token:generateToken({id:findUser._id.toString()},"7d")
           })
      }else{
           throw new Error('invalid email or password')
@@ -46,9 +47,6 @@ const login=asyncHandler(async (req,res)=>{
      
 
 })
-
-
-//get all users
 const getAllUsers=asyncHandler(async (req,res)=>{
      try{
           const users=await User.find()
@@ -57,8 +55,6 @@ const getAllUsers=asyncHandler(async (req,res)=>{
           res.status(400).json({msg:error.message})
      }
 })
-
-//get single use 
 const getUser=asyncHandler(async (req,res)=>{
      try{
           const {id}=req.params 
@@ -68,7 +64,33 @@ const getUser=asyncHandler(async (req,res)=>{
           res.status(400).json({message:'user not found'})
      }
 })
+const updateUser=asyncHandler(async (req,res)=>{
+     const {id}=req.user
+     try{ 
+          const updateUser=await User.findByIdAndUpdate(id,{
+               first_name:req?.body?.first_name,
+               last_name:req?.body?.last_name,
+               username:req?.body?.username,
+               email:req?.body?.email,
+               mobile:req?.body?.mobile,
+               picture:req?.body?.picture,
+               role:req?.body?.role,
+          },{new:true})
+          //check all fields change old value with new value
+          
+
+          res.status(200).json({msg:'user updated',updateUser})
+
+     }catch(error){
+          throw new Error(error.message)
+     }
 
 
-
-module.exports={createUser,getAllUsers,login,getUser}
+})
+const blockUser=asyncHandler(async (req,res)=>{
+     console.log(req.body)
+})
+const unblockUser=asyncHandler(async (req,res)=>{
+     console.log(req.body)
+})
+module.exports={createUser,getAllUsers,login,getUser,updateUser,blockUser,unblockUser}
