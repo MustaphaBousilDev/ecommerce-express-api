@@ -18,7 +18,11 @@ const userSchema=new mongoose.Schema({
      isBlocked: {type: Boolean,default: false,},
      cart:{type:Array,default:[]},
      address:[{type:mongoose.Schema.Types.ObjectId,ref:'Address'}],
-     wishlist:[{type:mongoose.Schema.Types.ObjectId,ref:'Product'}]
+     wishlist:[{type:mongoose.Schema.Types.ObjectId,ref:'Product'}],
+     refreshToken: {type: String,},
+     passwordChangedAt: Date,
+     passwordResetToken: String,
+     passwordResetExpires: Date,
 
 
      

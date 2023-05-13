@@ -8,7 +8,7 @@ login,
 getUser,
 updateUser,
 loginAdmin,
-handleRefreshToken,
+handleRefreshTokens,
 logOut,
 deleteUser,
 blockUser,
@@ -18,8 +18,8 @@ const {authMiddleware,isAdmin}=require('../middleware/authMiddleware')
 
 
 router.post('/register',createUser);
+router.get("/refresh", handleRefreshTokens);
 router.post('/login',login)
-router.get('/refresh',handleRefreshToken)
 
 router.get('/all-Users',getAllUsers);
 

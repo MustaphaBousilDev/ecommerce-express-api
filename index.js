@@ -6,11 +6,13 @@ const dotenv=require('dotenv').config()
 require('./config/dbConnect')
 const authRouter=require('./router/authRoute')
 const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser');
 const { notFound, errorHandler } = require('./middleware/errorHandler')
 const PORT=process.env.PORT || 4000
 
 //connect to db
 app.use(bodyParser.json())
+app.use(cookieParser());
 //this is for form data 
 app.use(bodyParser.urlencoded({ extended: false }))
 
