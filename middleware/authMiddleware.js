@@ -9,7 +9,6 @@ const authMiddleware=asyncHandler(async(req,res,next)=>{
           try {
                if(!token) throw new Error('Not authorized,no token')
                const decoded=jwt.verify(token,process.env.SECRET_KEY_TOKEN)
-               console.log(decoded)
                const user=await User.findById(decoded.payload.id)
                if(!user) throw new Error('No user found with this id')
                req.user=user

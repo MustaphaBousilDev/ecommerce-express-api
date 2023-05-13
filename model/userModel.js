@@ -6,6 +6,7 @@ const userSchema=new mongoose.Schema({
      last_name:{type:String,required:[true,'last name is required'],min:6,max:255,},
      username:{type:String,required:[true,'first name is required'],trim:true,text:true,unique:true},
      email:{type:String,required:[true,'email is required'],trim:true,unique:true,},
+     address: {type: String,},
      mobile:{type:String,required:true,min:10,max:10},
      password:{type:String,required:[true,'password is required'],min:6,max:1024},
      picture:{
@@ -14,7 +15,7 @@ const userSchema=new mongoose.Schema({
           trim:true 
      },
      role:{type:String,default:"user"},
-     isBlocked:{type:Boolean,default:false},
+     isBlocked: {type: Boolean,default: false,},
      cart:{type:Array,default:[]},
      address:[{type:mongoose.Schema.Types.ObjectId,ref:'Address'}],
      wishlist:[{type:mongoose.Schema.Types.ObjectId,ref:'Product'}]
