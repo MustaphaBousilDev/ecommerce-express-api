@@ -7,18 +7,11 @@ const {EmailValidator,PasswordValidator,LengthValidator,USernameValidator}=requi
 const bcrypt=require('bcryptjs')
 const { refreshTokens } = require('../config/refreshToken')
 const validateMongoDbId = require('../helpers/validateMongoDB')
+const {sendVerificationEmail}=require('../helpers/mailer')
 
 //Create user
 const createUser=asyncHandler(async (req,res)=>{
-     const {
-          first_name,
-          last_name,
-          username,
-          email,
-          mobile,
-          password,
-          picture}=req.body
-
+     const {first_name,last_name,username,email,mobile,password,picture}=req.body
      const emaild=await EmailValidator(email)
      const check=await User.findOne({email:email})
      if(check) return res.status(400).json({msg:'This email is already exists'})
@@ -40,31 +33,37 @@ const createUser=asyncHandler(async (req,res)=>{
           picture})
      user.save()
           .then((saveUser)=>{
+               const emailVerificationToken=generateToken({id:saveUser._id.toString()},"30m")
+               const url=`${process.env.BASE_URL}/activate/${emailVerificationToken}`
+               sendVerificationEmail(saveUser.email,saveUser.first_name,url)
                const token=generateToken({id:saveUser._id.toString()},"7d")
                res.status(200).json({msg:'user created',
                saveUser,
                token:token,
+               message:'Register Success , please activate your email'
           })})
           .catch((error)=>{res.status(400).json({msg:error.message})})
 }) 
 //Login user 
 const login=asyncHandler(async (req,res)=>{
      const {email,password}=req.body
-     //check if email exist
      const findUser=await User.findOne({email:email})
      if(findUser && await findUser.isPasswordMatch(password,findUser.password)){
           const refreshToken=await refreshTokens(findUser?._id)
-          //console.log('fucking login')
-          //console.log(findUser.id)
-          //console.log(refreshToken)
           const updateUser=await User.findByIdAndUpdate(
                findUser.id,
                {refreshToken:refreshToken},
                {new:true}
           )
-          //console.log(updateUser.refreshToken)
+
+          // Increments the login count for the user
+          await findUser.incrementLoginCount();
+
+          // secure true to allow https only
           res.cookie("refreshToken",refreshToken,{
                httpOnly:true, 
+               sameSite:'strict',
+               secure:false,
                maxAge:72 * 60 * 60 * 1000,
           })
           res.status(200).json({
@@ -79,13 +78,12 @@ const login=asyncHandler(async (req,res)=>{
                token:generateToken({id:findUser._id},"3d")
           })
      }else{
-          throw new Error('invalid email or password')
+          return res.status(401).json({message:'Invalid email or password'})
      }
      
 
 })
 //handle refresh token 
-
 const handleRefreshTokens = asyncHandler(async (req, res) => {
      const cookie = req.cookies;
      console.log('fuck the goods')
@@ -104,7 +102,7 @@ const handleRefreshTokens = asyncHandler(async (req, res) => {
        const accessToken = generateToken({id:user?._id},"3d");
        res.json({ accessToken });
      });
-   });
+});
 //Login admin 
 const loginAdmin=asyncHandler(async (req,res)=>{
      const {email,password}=req.body 
@@ -138,7 +136,6 @@ const loginAdmin=asyncHandler(async (req,res)=>{
           })
      }else{throw new Error("Invalid Credentials")}
 })
-
 //logout 
 const logOut=asyncHandler(async (req,res)=>{
      const cookie=req.cookies 
@@ -256,6 +253,22 @@ const updatePassword=asyncHandler(async (req,res)=>{
           res.json(user)   
      }
 })
+//activate account 
+const activeAccount=asyncHandler(async (req,res)=>{
+     try {
+          const {token}=req.body 
+          const user=jwt.verify(token,process.env.SECRET_KEY_TOKEN)
+          const check=await User.findById(user.id)
+          if(check.verified==true){
+               res.status(400).json({message:"this email is alrealy activated"})
+          }else{
+               await User.findByIdAndUpdate(user.id,{verified:true})
+               return res.status(200).json({message:"success verifiad this email"})
+          }
+     }catch(error){
+          res.status(500).json({message:error.message})
+     }
+})
 
 
 module.exports={
@@ -263,11 +276,11 @@ createUser,
 logOut,
 loginAdmin,
 deleteUser,
-
 getAllUsers,
 login,
 getUser,
 updateUser,
+activeAccount,
 blockUser,
 updatePassword,
 unblockUser,
