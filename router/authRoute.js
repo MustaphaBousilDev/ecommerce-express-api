@@ -31,7 +31,7 @@ router.get('/logout',authMiddleware,logOut)
 router.delete('/delete-user/:id',authMiddleware,isAdmin,deleteUser)
 router.put('/block-user/:id',authMiddleware,isAdmin,blockUser)
 router.put('/unblock-user/:id',authMiddleware,isAdmin,unblockUser)
-router.post('/active',activeAccount)
+router.post('/activate',authMiddleware,activeAccount)
 
 
 
