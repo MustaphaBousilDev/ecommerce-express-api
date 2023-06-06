@@ -1,7 +1,6 @@
 const mongoose=require('mongoose');
 const bcrypt=require('bcryptjs');
 const validator = require('validator');
-const RateLimit = require('express-rate-limit');
 //create schema
 const userSchema=new mongoose.Schema({ 
      first_name:{
@@ -58,7 +57,7 @@ const userSchema=new mongoose.Schema({
           maxlength: [128, 'Password must be less than 128 characters long'],
           validate: {
                validator: function(value) {
-                 // Require at least one uppercase letter, one lowercase letter, one special character and one number
+                 // Require at least one uppercase le tter, one lowercase letter, one special character and one number
                  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]\\|:;'<>,.?/])[a-zA-Z\d!@#$%^&*()_\-+={}[\]\\|:;'<>,.?/]{8,}$/;
                  return regex.test(value);
                },
@@ -74,10 +73,30 @@ const userSchema=new mongoose.Schema({
           default:'https://res.cloudinary.com/dmhcnhtng/image/upload/v1643044376/avatars/default_pic_jeaybr.png',
           trim:true 
      },
-     role:{type:String,default:"user"},
+     role:{
+          type:String,
+          enum:['admin','employee','user','god'],
+          required:[true,'user must be required role'],
+          default:"user", 
+          validator: function(value) {
+               //one of array value
+               return validator.isIn(value, ['admin','employee','user','god']);
+          },
+          
+     },
      isBlocked: {type: Boolean,default: false,},
      verified:{type:Boolean,default:false },
      cart:{type:Array,default:[]},
+     search:[
+          {
+               product:{
+                    type:mongoose.Schema.Types.ObjectId,
+                    ref:'Product',
+                    required:true
+               },
+               createdAt:{type:Date,required:true}
+          },
+     ],
      address:[{type:mongoose.Schema.Types.ObjectId,ref:'Address'}],
      wishlist:[{type:mongoose.Schema.Types.ObjectId,ref:'Product'}],
      refreshToken: {type: String,},

@@ -5,17 +5,26 @@ const jwt=require('jsonwebtoken')
 const authMiddleware=asyncHandler(async(req,res,next)=>{
      let token 
      if(req?.headers?.authorization?.startsWith('Bearer')){
-          token=req.headers.authorization.split(' ')[1]
+          token=req.headers.authorization.split(' ')[1] 
           try {
-               if(!token) throw new Error('Not authorized,no token')
+               if(!token) {
+                    return res.status(401).json({
+                         success: false,
+                         message: "Token Missing"
+                    })
+               }
+               //verify token
+               
                const decoded=jwt.verify(token,process.env.SECRET_KEY_TOKEN)
                const user=await User.findById(decoded.payload.id)
                if(!user) throw new Error('No user found with this id')
                req.user=user
                next()
           } catch (error) {
-               res.status(401)
-               throw new Error('Not authorized,token failed')
+               return res.status(401).json({
+                    success:false,
+                    message: "Error Occured in Authentication ⚠️"
+               })
           }
      }else{
           res.status(401)

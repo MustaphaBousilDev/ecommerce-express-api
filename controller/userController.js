@@ -1,9 +1,12 @@
 const User=require('../model/userModel')
 const asyncHandler=require('express-async-handler')
 const {generateToken}=require('../config/jwtToken')
+const generateCode=require('../helpers/generateCode')
 //get validation from helper
 const jwt=require('jsonwebtoken')
-const {EmailValidator,PasswordValidator,LengthValidator,USernameValidator}=require('../helpers/validations')
+const {EmailValidator,PasswordValidator,
+     validateImage,
+     LengthValidator,USernameValidator}=require('../helpers/validations')
 const bcrypt=require('bcryptjs')
 const { refreshTokens } = require('../config/refreshToken')
 const validateMongoDbId = require('../helpers/validateMongoDB')
@@ -37,7 +40,8 @@ const createUser=asyncHandler(async (req,res)=>{
                const url=`${process.env.BASE_URL}/activate/${emailVerificationToken}`
                sendVerificationEmail(saveUser.email,saveUser.first_name,url)
                const token=generateToken({id:saveUser._id.toString()},"7d")
-               res.status(200).json({msg:'user created',
+               res.status(200).json({
+               success:true,
                saveUser,
                token:token,
                message:'Register Success , please activate your email'
@@ -139,6 +143,7 @@ const loginAdmin=asyncHandler(async (req,res)=>{
 //logout 
 const logOut=asyncHandler(async (req,res)=>{
      const cookie=req.cookies 
+     console.log(cookie)
      if(!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies")
      const refreshToken=cookie.refreshToken 
      const user=await User.findOne({refreshToken})
@@ -156,6 +161,7 @@ const logOut=asyncHandler(async (req,res)=>{
           httpOnly:true , 
           secure:true 
      })
+     //204 is mean no content(so you cant add message to it)
      res.sendStatus(204)
 })
 //get All Users 
@@ -303,7 +309,7 @@ const resetPassword = asyncHandler(async (req, res) => {
           res.status(500).json({ message: error.message });
         }
 });
-//send verifications
+//send verifications when i want to verify my email when i want not when i register 
 const sendVerification=asyncHandler(async (req,res)=>{
      try {
           const id = req.user.id;
@@ -352,6 +358,34 @@ const changePassword=asyncHandler(async (req,res)=>{
      );
      return res.status(200).json({ message: "ok" });
 })
+//get profile 
+const getProfile=asyncHandler(async(req,res)=>{
+     try{
+          const {username}=req.params
+          const user=await User.findById(req.user.id)
+          //await User.findOne({username}).select("-password") this code is mean i want to get all data without password
+          const profile=await User.findOne({username}).select("-password")
+          if(!profile){
+               res.status(404).json({message:"user not found"})
+          }
+          res.json(profile)
+     }catch(err){
+          res.status(500).json({message:err.message})
+     }
+})
+//update picture 
+const updatePicture=asyncHandler(async (req,res)=>{
+     try{
+          const {url}=req.body 
+          validateImage(url)
+          const user=await User.findByIdAndUpdate(req.user.id,{
+               picture:url
+          })
+          res.json(url)
+     }catch(err){
+          res.status(500).json({message:err.message})
+     }
+})
    
 
 
@@ -369,4 +403,11 @@ blockUser,
 updatePassword,
 unblockUser,
 handleRefreshTokens,
+resetPassword ,
+changePassword,
+validateResetPassword,
+sendVerification,
+getProfile,
+updatePicture
+
 }
