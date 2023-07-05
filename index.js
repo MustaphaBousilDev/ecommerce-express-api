@@ -6,6 +6,7 @@ const dotenv=require('dotenv').config()
 require('./config/dbConnect')
 const authRouter=require('./router/authRoute')
 const productRouter=require('./router/productRoute')
+const categoryRouter=require('./router/categoryRoute')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser');
 const { notFound, errorHandler } = require('./middleware/errorHandler')
@@ -21,6 +22,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use('/api/user',authRouter)
 app.use('/api/product',productRouter)
+app.use('/api/category',categoryRouter)
 //this is for not found
 app.use(notFound)
 //this is for error handler

@@ -7,7 +7,7 @@ var prodcategorySchema = new mongoose.Schema(
     name: {
           type: String,
           required: [true, "category  of product name is required"],
-          unique: true,
+          unique: [true, "category  of product name must be unique"],
           index: true,
           lowercase: true,
           trim: true,
@@ -50,35 +50,43 @@ var prodcategorySchema = new mongoose.Schema(
      user: {
           type: mongoose.Schema.ObjectId,
           ref: "User",
-          required: [true, "category  of product user is required"],
-          validator: function(value) {
+          //required: [true, "category  of product user is required"],
+          /*validator: function(value) {
                // int and numeric
                return validator.isNumeric(value.replace(/\s/g, "")) && validator.isInt(value.replace(/\s/g, ""));
-          }
+          }*/
+          default:null,
      },
      user_updated: {
           type: mongoose.Schema.ObjectId,
           ref: "User",
-          required: [true, "category  of product user_updated is required"],
-          validator: function(value) {
+          //required: [true, "category  of product user_updated is required"],
+          /*validator: function(value) {
                // int and numeric
                return validator.isNumeric(value.replace(/\s/g, "")) && validator.isInt(value.replace(/\s/g, ""));
-          },
+          },*/
           default:null 
      },
      user_deleted: {
           type: mongoose.Schema.ObjectId,
           ref: "User",
-          required: [true, "category  of product user_deleted is required"],
-          validator: function(value) {
+          //required: [true, "category  of product user_deleted is required"],
+          /*validator: function(value) {
                // int and numeric
                return validator.isNumeric(value.replace(/\s/g, "")) && validator.isInt(value.replace(/\s/g, ""));
-          },
+          },*/
           default:null
      },
 },
 {timestamps:true}
 );
 
+
+
+// Assuming you have already required the necessary models (User, Category)
+prodcategorySchema.methods.getCategories = async function() {
+     const categories = await Category.find({ userId: this._id });
+     return categories;
+};
 //Export the model
 module.exports = mongoose.model("PCategory", prodcategorySchema);
