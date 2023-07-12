@@ -42,6 +42,15 @@ const isAdmin=asyncHandler(async(req,res,next)=>{
      }
 })
 
+const isEmployee=asyncHandler(async(req,res,next)=>{
+     if(req.user && (req.user.role==='admin' || req.user.role==='employee')){
+          next() 
+     }else{
+          res.status(401)
+          throw new Error('Not authorized because you are not an employee')
+     }
+})
+
 const isGood=asyncHandler(async(req,res,next)=>{
      if(req.user && req.user.role==='admin'){
           next() 

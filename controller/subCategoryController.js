@@ -1,4 +1,5 @@
 const slugify = require("slugify");
+const SubCategory=require('../model/subCatProduct')
 const Category=require('../model/categoryProductModel')
 const User=require('../model/userModel')
 const asyncHandler= require('express-async-handler')
@@ -16,15 +17,17 @@ const {
 
 
 //-----------------------------------------------------
-const createCategory=asyncHandler(async(req,res)=>{
+const createSubCategory=asyncHandler(async(req,res)=>{
      try{
-          const {name}=req.body   
+          const {name,categoryID}=req.body   
           const slug=slugify(name)
           req.body.slug=slug
           req.body.user=req.user._id
           if(!validateString(name)){return res.status(400).json({msg:"Error title not fucking valid"})}
-          const newCategory=await Category.create(req.body)     
-          res.json(newCategory)
+          validateMongoDbId(categoryID)
+          validateMongoDbId(req.body.user)
+          const newSubCategory=await SubCategory.create(req.body)     
+          res.json(newSubCategory)
      }catch(error){
           throw new Error(error)
      }
