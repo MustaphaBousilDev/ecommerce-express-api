@@ -12,13 +12,13 @@ DisplayCategory}=require('../controller/categoryController')
 const {authMiddleware,isAdmin, isGood}=require('../middleware/authMiddleware')
 const router=express.Router()
 
-router.post('/',authMiddleware,isAdmin,createCategory)
-router.get('/',authMiddleware,getAllCategory);
-router.get('/:id',authMiddleware,getCategory);
-router.put('/:id',authMiddleware,isAdmin,updateCategory)
-router.delete('/:id',authMiddleware,isGood,deleteCategory)
-router.put('/block/:id',authMiddleware,isAdmin,hiddenCategory)
-router.put('/display/:id',authMiddleware,isAdmin,DisplayCategory)
+router.post('/',isAdmin,createCategory)
+router.get('/',getAllCategory);
+router.get('/:id',getCategory);
+router.put('/:id',isAdmin,updateCategory)
+router.delete('/:id',isGood,deleteCategory)
+router.put('/block/:id',isAdmin,hiddenCategory)
+router.put('/display/:id',isAdmin,DisplayCategory)
 router.post('/search',SearchCategory)
 //filtering and sorting category
 

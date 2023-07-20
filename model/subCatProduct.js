@@ -93,10 +93,5 @@ var SubCategoryProductSchema = new mongoose.Schema(
 
 
 
-// Assuming you have already required the necessary models (User, Category)
-prodcategorySchema.methods.getCategories = async function() {
-     const categories = await Category.find({ userId: this._id });
-     return categories;
-};
-//Export the model
-module.exports = mongoose.model("PSubCategory", prodcategorySchema);
+
+module.exports = mongoose.model("PSubCategory", SubCategoryProductSchema);

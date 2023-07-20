@@ -1,5 +1,5 @@
 const slugify = require("slugify");
-const SubCategory=require('../model/subCatProduct')
+const Brand=require('../model/brandModel')
 const User=require('../model/userModel')
 const asyncHandler= require('express-async-handler')
 const validateMongoDbId = require('../helpers/validateMongoDB')
@@ -16,25 +16,25 @@ const {
 
 
 //-----------------------------------------------------
-const createSubCategory=asyncHandler(async(req,res)=>{
+const createBrand=asyncHandler(async(req,res)=>{
      try{
-          const {name,category}=req.body   
+          const {name}=req.body   
           const slug=slugify(name)
           req.body.slug=slug
           req.body.user=req.user._id
-          validateMongoDbId(category)
+          validateMongoDbId(req.body.user)
           if(!validateString(name)){
                return res.status(400).json({msg:"Error title not fucking valid"})
           }
-          const newSubCategory=await SubCategory.create(req.body)     
-          res.json(newSubCategory)
+          const newBrand=await Brand.create(req.body)     
+          res.json(newBrand)
      }catch(error){
           throw new Error(error)
      }
 }) 
 //-----------------------------------------------------
 //------------------------------------------------------
-const getAllSubCategory=asyncHandler(async(req,res)=>{
+const getAllBrands=asyncHandler(async(req,res)=>{
      try{
           const queryObj = { ...req.query };
           if(queryObj){
@@ -43,7 +43,7 @@ const getAllSubCategory=asyncHandler(async(req,res)=>{
                excludeFields.forEach((el) => delete queryObj[el]);
                let queryStr = JSON.stringify(queryObj);
                queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-               let query = SubCategory.find(JSON.parse(queryStr));
+               let query = Brand.find(JSON.parse(queryStr));
                //-------------------------------------------------------
                // Sorting
                if (req.query.sort) {
@@ -67,19 +67,16 @@ const getAllSubCategory=asyncHandler(async(req,res)=>{
                const skip = (page - 1) * limit;
                query = query.skip(skip).limit(limit);
                if (req.query.page) {
-                    const categoytCount = await SubCategory.countDocuments();
+                    const categoytCount = await Brand.countDocuments();
                     if (skip >= categoytCount) throw new Error("This Page does not exists");
                }
                //--------------------------------------------------------
- 
-
-
-
-               const subcategories = await query;
-               res.json(subcategories);
+               // Execute the query
+               const brands = await query;
+               res.json(brands);
           }else{
-               const subcategory=await SubCategory.find({}).populate('user')
-               res.json(subcategory)
+               const brands=await Brand.find({}).populate('user')
+               res.json(brands)
           }
      }catch(error){
           throw new Error(error)
@@ -87,74 +84,75 @@ const getAllSubCategory=asyncHandler(async(req,res)=>{
 })
 //------------------------------------------------------
 //------------------------------------------------------
-const updateSubCategory = asyncHandler(async (req, res) => {
+const updateBrand = asyncHandler(async (req, res) => {
      const {id}=req.params 
      validateMongoDbId(id);
+     console.log(id)
      try {
           req.body.slug = req.body.name && slugify(req.body.name);
-          req.body.category=req.body.category && validateColorEnum(req.body.category)
           req.body.user_updated=req.user._id 
-          const updateSubCategory= await SubCategory.findByIdAndUpdate(id,{
+          const brandupdated= await Brand.findByIdAndUpdate(id,{
                name:req?.body?.name,
-               category:req?.body?.category,
-               user_updated:req?.body?.user_updated,
+               user_updated:req?.user?._id,
                slug:req?.body?.slug,
                status:req?.body?.status,
-     },{new: true});
-     res.json(updateSubCategory);
+          },{new: true});
+
+          
+     res.json(brandupdated);
      } catch (error) {
-       throw new Error(error);
+       res.status(400).json({msg:error.message});
      }
 });
 //------------------------------------------------------
 //------------------------------------------------------
-const deleteSubCategory = asyncHandler(async (req, res) => {
+const deleteBrand = asyncHandler(async (req, res) => {
      const {id}=req.params
      validateMongoDbId(id);
      try {
-          const deleteSubCategory = await SubCategory.findOneAndDelete(id);
-          res.json(deleteSubCategory);
+          const deleteBrand = await Brand.findByIdAndDelete(id);
+          res.json(deleteBrand);
      } catch (error) {
           throw new Error(error);
      }
 });
 //------------------------------------------------------
 //------------------------------------------------------
-const getSubCategory=asyncHandler(async (req,res)=>{
+const getBrand=asyncHandler(async (req,res)=>{
      const { id } = req.params;
      validateMongoDbId(id);
      try {
-          const findSubCategory = await SubCategory.findById(id);
-          res.json(findSubCategory);
+          const findBrand= await Brand.findById(id);
+          res.json(findBrand);
      } catch (error) {
           throw new Error(error);
      }
 })
 //------------------------------------------------------
 //------------------------------------------------------
-const hiddenSubCategory = asyncHandler(async (req, res) => {
+const hiddenBrand = asyncHandler(async (req, res) => {
      const {id}=req.params
      validateMongoDbId(id);
      try {
-          const hiddenSubCategory = await SubCategory.findOneAndUpdate(id,{status:0},{new: true});
-          res.json(hiddenSubCategory);
+          const hiddenBrand = await Brand.findByIdAndUpdate(id,{status:0},{new: true});
+          res.json(hiddenBrand);
      } catch (error) {
           throw new Error(error);
      }
 })
 //------------------------------------------------------
 //------------------------------------------------------
-const DisplaySubCategory = asyncHandler(async (req, res) => {
+const DisplayBrand = asyncHandler(async (req, res) => {
      const {id}=req.params
      validateMongoDbId(id);
      try {
           //get ctaegory by id and check if status is 0
-          const subcategory = await SubCategory.findById(id);
-          if(subcategory.status===0){
-               const DisplaySubCategory = await SubCategory.findOneAndUpdate(id,{status:1},{new: true});
-               res.json(DisplaySubCategory);
+          const brand = await Brand.findById(id);
+          if(brand.status===0){
+               const DisplayBrand = await Brand.findByIdAndUpdate(id,{status:1},{new: true});
+               res.json(DisplayBrand);
           }else{
-               res.status(400).json({msg:"Sub Category already displayed"})
+               res.status(400).json({msg:"Brand already displayed"})
           }
      } catch (error) {
           throw new Error(error);
@@ -162,14 +160,14 @@ const DisplaySubCategory = asyncHandler(async (req, res) => {
 })
 //------------------------------------------------------
 //------------------------------------------------------
-const SearchSubCategory = asyncHandler(async (req, res) => {
+const SearchBrand = asyncHandler(async (req, res) => {
      const {search}=req.body 
      //validateString is a function that check if the string is empty or not
      if(!validateString(search)){
           return res.status(400).json({msg:"Error search not fucking valid"})
      }
      try {
-          const subcategory = await SubCategory.find(
+          const brand = await Brand.find(
                {name:{
                     //regex is used to find the word in the string
                     $regex:search,
@@ -177,19 +175,19 @@ const SearchSubCategory = asyncHandler(async (req, res) => {
                     $options:'i'
                     }
                });
-          res.json(subcategory);
+          res.json(brand);
      } catch (error) {
           res.status(400).json({msg:error.message})
      }
 })
 
 module.exports={
-     createSubCategory,
-     getAllSubCategory,
-     updateSubCategory,
-     deleteSubCategory,
-     getSubCategory,
-     hiddenSubCategory,
-     DisplaySubCategory,
-     SearchSubCategory
+     createBrand,
+     getAllBrands,
+     getBrand,
+     updateBrand ,
+     deleteBrand,
+     hiddenBrand,
+     DisplayBrand ,
+     SearchBrand
 }

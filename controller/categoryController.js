@@ -22,7 +22,7 @@ const createCategory=asyncHandler(async(req,res)=>{
           const slug=slugify(name)
           req.body.slug=slug
           req.body.user=req.user._id
-          if(!validateString(name)){return res.status(400).json({msg:"Error title not fucking valid"})}
+          if(!validateString(name)) return res.status(400).json({msg:"Error title not fucking valid"})
           const newCategory=await Category.create(req.body)     
           res.json(newCategory)
      }catch(error){
@@ -92,13 +92,13 @@ const updateCategory = asyncHandler(async (req, res) => {
           req.body.slug = slugify(req.body.name);
      }
      req.body.user_updated=req.user._id 
-     const updateCategory= await Category.findOneAndUpdate(id,{
-          name:req?.body?.name  ,
-          user_updated:req?.body?.user_updated,
+     const categoryupdated= await Brand.findByIdAndUpdate(id,{
+          name:req?.body?.name,
+          user_updated:req?.user?._id,
           slug:req?.body?.slug,
           status:req?.body?.status,
      },{new: true});
-     res.json(updateCategory);
+     res.json(categoryupdated);
      } catch (error) {
        throw new Error(error);
      }

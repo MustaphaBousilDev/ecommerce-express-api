@@ -61,7 +61,7 @@ const validateNumber=(number)=>{
      return true;
 }
 
-const validateString=(text,minChar=4,maxChar=20)=>{
+const validateString=(text,minChar=1,maxChar=20)=>{
      if(!String(text) || text.length < minChar || text.length >300){
           return false
      }
