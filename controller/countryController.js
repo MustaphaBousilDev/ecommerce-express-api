@@ -1,0 +1,194 @@
+const slugify = require("slugify");
+const Country=require('../model/countriesModel')
+const User=require('../model/userModel')
+const asyncHandler= require('express-async-handler')
+const validateMongoDbId = require('../helpers/validateMongoDB')
+
+const {
+     validateStatus,
+     validateString,
+     validateSizeEnum,
+     validateNumberIntegers,
+     validateNumber,
+     validateColorEnum,
+     validateImage,
+}=require('../helpers/validations')
+
+
+//-----------------------------------------------------
+const  createCountry=asyncHandler(async(req,res)=>{
+     try{
+          const {name}=req.body   
+          const slug=slugify(name)
+          req.body.slug=slug
+          req.body.user=req.user._id
+          validateMongoDbId(req.body.user)
+          if(!validateString(name)){
+               return res.status(400).json({msg:"Error title not fucking valid"})
+          }
+          const newCountry=await Country.create(req.body)     
+          res.json(newCountry)
+     }catch(error){
+          throw new Error(error)
+     }
+}) 
+//-----------------------------------------------------
+//------------------------------------------------------
+const getAllCountry=asyncHandler(async(req,res)=>{
+     try{
+          const queryObj = { ...req.query };
+          if(queryObj){
+               //feltring 
+               const excludeFields = ["page", "sort", "limit", "fields"];
+               excludeFields.forEach((el) => delete queryObj[el]);
+               let queryStr = JSON.stringify(queryObj);
+               queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+               let query = Country.find(JSON.parse(queryStr));
+               //-------------------------------------------------------
+               // Sorting
+               if (req.query.sort) {
+                    const sortBy = req.query.sort.split(",").join(" ");
+                    query = query.sort(sortBy);
+               } else {
+                    query = query.sort("-createdAt");
+               }
+               //-------------------------------------------------------
+               //Limiting the Fields
+               if (req.query.fields) {
+                    const fields = req.query.fields.split(",").join(" ");
+                    query = query.select(fields);
+               } else {
+               query = query.select("-__v");
+               }
+               //--------------------------------------------------------
+               // pagination
+               const page = parseInt(req.query.page) || 1;
+               const limit = parseInt(req.query.limit) || 5;
+               const skip = (page - 1) * limit;
+               query = query.skip(skip).limit(limit);
+               if (req.query.page) {
+                    const categoytCount = await Country.countDocuments();
+                    if (skip >= categoytCount) throw new Error("This Page does not exists");
+               }
+               //--------------------------------------------------------
+               // Execute the query
+               const country = await query;
+               res.json(country);
+          }else{
+               const country=await Country.find({}).populate('user')
+               res.json(country)
+          }
+     }catch(error){
+          throw new Error(error)
+     }
+})
+//------------------------------------------------------
+//------------------------------------------------------
+const updateCountry = asyncHandler(async (req, res) => {
+     const {id}=req.params 
+     validateMongoDbId(id);
+     console.log(id)
+     try {
+          req.body.slug = req.body.name && slugify(req.body.name);
+          req.body.user_updated=req.user._id 
+          const Countryupdated= await Country.findByIdAndUpdate(id,{
+               name:req?.body?.name,
+               user_updated:req?.user?._id,
+               slug:req?.body?.slug,
+               status:req?.body?.status,
+          },{new: true});
+
+          
+     res.json(Countryupdated);
+     } catch (error) {
+       res.status(400).json({msg:error.message});
+     }
+});
+//------------------------------------------------------
+//------------------------------------------------------
+const deleteCountry = asyncHandler(async (req, res) => {
+     const {id}=req.params
+     validateMongoDbId(id);
+     try {
+          const deleteCountry = await Country.findByIdAndDelete(id);
+          res.json(deleteCountry);
+     } catch (error) {
+          throw new Error(error);
+     }
+});
+//------------------------------------------------------
+//------------------------------------------------------
+const getCountry=asyncHandler(async (req,res)=>{
+     const { id } = req.params;
+     validateMongoDbId(id);
+     try {
+          const findCountry= await Country.findById(id);
+          res.json(findCountry);
+     } catch (error) {
+          throw new Error(error);
+     }
+})
+//------------------------------------------------------
+//------------------------------------------------------
+const hiddenCountry = asyncHandler(async (req, res) => {
+     const {id}=req.params
+     validateMongoDbId(id);
+     try {
+          const hiddenCountry = await Country.findByIdAndUpdate(id,{status:0},{new: true});
+          res.json(hiddenCountry);
+     } catch (error) {
+          throw new Error(error);
+     }
+})
+//------------------------------------------------------
+//------------------------------------------------------
+const DisplayCountry = asyncHandler(async (req, res) => {
+     const {id}=req.params
+     validateMongoDbId(id);
+     try {
+          //get ctaegory by id and check if status is 0
+          const country = await Country.findById(id);
+          if(country.status===0){
+               const DisplayCountry = await Country.findByIdAndUpdate(id,{status:1},{new: true});
+               res.json(DisplayCountry);
+          }else{
+               res.status(400).json({msg:"Brand already displayed"})
+          }
+     } catch (error) {
+          throw new Error(error);
+     }
+})
+//------------------------------------------------------
+//------------------------------------------------------
+const SearchCountry = asyncHandler(async (req, res) => {
+     const {search}=req.body 
+     //validateString is a function that check if the string is empty or not
+     if(!validateString(search)){
+          return res.status(400).json({msg:"Error search not fucking valid"})
+     }
+     try {
+          const country= await Country.find(
+               {name:{
+                    //regex is used to find the word in the string
+                    $regex:search,
+                    //options i is used to find the word in the string even if it is in uppercase or lowercase
+                    $options:'i'
+                    }
+               });
+          res.json(country);
+     } catch (error) {
+          
+          res.status(400).json({msg:error.message})
+     }
+})
+
+module.exports={
+     createCountry,
+     getAllCountry,
+     updateCountry,
+     deleteCountry,
+     getCountry,
+     hiddenCountry,
+     DisplayCountry ,
+     SearchCountry
+}
