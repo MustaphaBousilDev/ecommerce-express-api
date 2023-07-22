@@ -10,6 +10,7 @@ const categoryRouter=require('./router/categoryRoute')
 const subCategoryRouteer=require('./router/subCategoryRoute')
 const brandRouter=require('./router/brandRoute')
 const countryRouter=require('./router/countryRoute')
+const cityRouter=require('./router/cityRoute')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser');
 const { notFound, errorHandler } = require('./middleware/errorHandler')
@@ -30,6 +31,7 @@ app.use('/api/category',authMiddleware,categoryRouter)
 app.use('/api/subcategory',authMiddleware,subCategoryRouteer)
 app.use('/api/brands',authMiddleware,brandRouter)
 app.use('/api/country',authMiddleware,countryRouter)
+app.use('/api/city',authMiddleware,cityRouter)
 //this is for not found
 app.use(notFound)
 //this is for error handler
