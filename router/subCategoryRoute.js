@@ -12,9 +12,10 @@ const {
 
 
 const {authMiddleware,isAdmin, isGood}=require('../middleware/authMiddleware')
+const upload=require('../middleware/multer')
 const router=express.Router()
 
-router.post('/',isAdmin,createSubCategory)
+router.post('/',isAdmin,upload.single('picture'),createSubCategory)
 router.get('/',getAllSubCategory);
 router.put('/:id',isAdmin,updateSubCategory)
 router.delete('/:id',isGood,deleteSubCategory)

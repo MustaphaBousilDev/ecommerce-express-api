@@ -1,6 +1,8 @@
 const slugify = require("slugify");
 const SubCategory=require('../model/subCatProduct')
 const User=require('../model/userModel')
+const cloudinary = require("../helpers/cloudinary");
+const fs = require('fs');
 const asyncHandler= require('express-async-handler')
 const validateMongoDbId = require('../helpers/validateMongoDB')
 
@@ -17,16 +19,32 @@ const {
 
 //-----------------------------------------------------
 const createSubCategory=asyncHandler(async(req,res)=>{
+     console.log('hello from create sub category')
      try{
+          
           const {name,category}=req.body   
+          const {path} =req.file;
+          
           const slug=slugify(name)
           req.body.slug=slug
           req.body.user=req.user._id
           validateMongoDbId(category)
+          
           if(!validateString(name)){
                return res.status(400).json({msg:"Error title not fucking valid"})
           }
-          const newSubCategory=await SubCategory.create(req.body)     
+          const result = await cloudinary.uploader.upload(path);
+          const newSubCategory=await SubCategory.create({
+               name:req.body.name ,
+               category:req.body.category , 
+               slug:req.body.slug,
+               user:req.body.user,
+               picture:result.secure_url,
+               cloudinary_id:result.public_id
+          })  
+          
+          //removed the uploaded image from the uploads folder
+          fs.unlinkSync(path);
           res.json(newSubCategory)
      }catch(error){
           throw new Error(error)

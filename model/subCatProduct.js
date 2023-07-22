@@ -36,6 +36,10 @@ var SubCategoryProductSchema = new mongoose.Schema(
           },
           default:"https://res.cloudinary.com/dmhcnhtng/image/upload/v1643044376/avatars/default_pic_jeaybr.png"
      },
+     cloudinary_id: {
+          type: String,
+          required: [true, "subcategory  of product cloudinary_id is required"],
+     },
      status: {
           type: Number,
           required: [true, "subcategory  of product status is required"],
