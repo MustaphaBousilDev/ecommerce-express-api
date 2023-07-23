@@ -85,8 +85,9 @@ const validateColorEnum=(color)=>{
 }
 
 const validateSizeEnum=(size)=>{
+     let Size=size.toLowerCase()
      const sizes=['xs','s','m','l','xl','xxl','xxxl']
-     if(!sizes.includes(size)){
+     if(!sizes.includes(Size)){
           return false;
      }
      return true;
