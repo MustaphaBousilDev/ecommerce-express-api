@@ -1,7 +1,7 @@
 const express=require('express')
 const {
      createSubCategory,
-     getAllSubCategory,
+     getAllSubCategory, 
      updateSubCategory,
      deleteSubCategory,
      getSubCategory,

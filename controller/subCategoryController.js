@@ -24,6 +24,7 @@ const createSubCategory=asyncHandler(async(req,res)=>{
           
           const {name,category}=req.body   
           const {path} =req.file;
+          console.log(path)
           
           const slug=slugify(name)
           req.body.slug=slug

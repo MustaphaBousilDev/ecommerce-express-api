@@ -33,10 +33,8 @@ const authMiddleware=asyncHandler(async(req,res,next)=>{
 })
 
 const isAdmin=asyncHandler(async(req,res,next)=>{
-     console.log('start is Admin')
      if(req.user && (req.user.role==='admin' 
           || req.user._id.toString()===req.params.id.toString())){
-          console.log('success admin isAdmin')
           next() 
      }else{
           res.status(401)
