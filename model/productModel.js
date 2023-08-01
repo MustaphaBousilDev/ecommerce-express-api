@@ -7,7 +7,6 @@ const productSchema=new mongoose.Schema({
           required:[true,'product name is required'],
           trim:true,
           unique:true,
-          //validate mutch have character and number is optional
           validator: (value) => {
                return validator.isAlphanumeric(value.replace(/\s/g, ''));
           }
@@ -18,19 +17,24 @@ const productSchema=new mongoose.Schema({
           trim:true,
           lowercase:true,
           unique:true,
-          
+          validator: (value) => {
+               return validator.isAlphanumeric(value.replace(/\s/g, ''));
+          }
      },
      short_description:{
           type:String,
-          //not required 
           required:true,
           trim:true,
           lowercase:true,
+          maxlength:100,
+          minlength:10,
+          validator : (value) => {
+               return validator.isAlphanumeric(value.replace(/\s/g, ''));
+          }
           
      },
      description:{
           type:String,
-          required:true,
           trim:true,
           lowercase:true,
      },
@@ -38,7 +42,6 @@ const productSchema=new mongoose.Schema({
           type:Number,
           required:false,
           trim:true,
-          //default value
           default:0,
           validator: (value) => {
                // remove all spaces from string value
@@ -50,7 +53,6 @@ const productSchema=new mongoose.Schema({
           required:[true,'product sale price is required'],
           trim:true,
           validator: (value) => {
-               // remove all spaces from string value
                return validator.isNumeric(value.replace(/\s/g, ''));
           }
      },
@@ -60,6 +62,9 @@ const productSchema=new mongoose.Schema({
           trim:true,
           lowercase:true,
           unique:true,
+          validator: (value) => {
+               return validator.isAlphanumeric(value.replace(/\s/g, ''));
+          }
      },
      status :{
           type:Number,
@@ -87,128 +92,121 @@ const productSchema=new mongoose.Schema({
           trim:true,
           lowercase:true,
           unique:true,
+          validator: (value) => {
+               return validator.isAlphanumeric(value.replace(/\s/g, ''));
+          }
      },
      made:{
-          //relation with country table 
-          type:String,
-          ref:'country',
+          type:mongoose.Schema.ObjectId,
+          ref:'Country',
           default:null,
-          /*required:[true,'product made is required'],
+          required:[true,'product made is required'],
+          //must be validation id of country table
           validator: function(value) {
-               // int and numeric
-               return validator.isNumeric(value.replace(/\s/g, '')) && validator.isInt(value.replace(/\s/g, ''));
-          }*/
-     },
-     subCategory:{
-          //relation with category table
-          type:String,
-          ref:'SubCategory',
-          default:"erererer",
-          required:false,
-          /*validator: function(value) {
                //must be character and number 
                return validator.isAlphanumeric(value.replace(/\s/g, ''));
-          }*/
-     },
-     brand:{
-          //relation with brand table
-          type:String,
-          ref:'Brand',
-          required:[true,'product brand is required'],
-          default:null,
-     },
-     tags:{
-          //relation with tag table
-          type:Array,
-          ref:'tag',
-          default:[],
-          required:[true,'product tags is required'],
-          validator: function(value) {
-               // int and numeric
-               return validator.isNumeric(value.replace(/\s/g, '')) && validator.isInt(value.replace(/\s/g, ''));
           }
      },
-     images:{
-          type:Array,
-          required:[true,'product images is required'],
+     subCategory:{
+          type:mongoose.Schema.ObjectId,
+          ref:'PSubCategory',
+          default:null,
+          required:false,
           validator: function(value) {
-               // character and number
+               //must be character and number 
                return validator.isAlphanumeric(value.replace(/\s/g, ''));
           }
      },
+     brand:{
+          type:mongoose.Schema.ObjectId,
+          ref:'PBrands',
+          required:[true,'product brand is required'],
+          default:null,
+          validator: function(value) {  
+               //must be character and number 
+               return validator.isAlphanumeric(value.replace(/\s/g, ''));
+          }
+     },
+     tags:[
+          {
+               type:mongoose.Schema.ObjectId,
+               ref:'PTags',
+               required:false,
+               default:null,
+               validator: function(value) {
+                    //must be character and number 
+                    return validator.isAlphanumeric(value.replace(/\s/g, ''));
+               }
+          }
+     ],
      color:{
-          type:String,
-          enum:['red','blue','green','yellow','black','white','orange','pink','purple','brown','gray','silver','gold','other'],
-          required:[true,'product color is required'],
-          validator: function(value) {
-               //one of array value
-               return validator.isIn(value, ['red','blue','green','yellow','black','white','orange','pink','purple','brown','gray','silver','gold','other']);
-          },
-          default:'other'
-     },
-     size:{
-          type:String,
-          enum:['xs','s','m','l','xl','xxl','xxxl','other'],
-          required:[true,'product size is required'],
-          validator: function(value) {
-               //one of array value
-               return validator.isIn(value, ['xs','s','m','l','xl','xxl','xxxl','other']);
-          },
-          default:'other'
-     },
-     user:{
-          //relation with user table
-          type:String,
-          ref:'user',
+          type:mongoose.Schema.ObjectId,
+          ref:'Colors',
           default:null,
           required:false,
-          /*validator: function(value) {
-               // int and numeric
-               return validator.isNumeric(value.replace(/\s/g, '')) && validator.isInt(value.replace(/\s/g, ''));
-          }*/
+          validator: function(value) {
+               //must be character and number 
+               return validator.isAlphanumeric(value.replace(/\s/g, ''));
+          },
      },
-     ratings:{
-          star:Number,
-          comment:String,
-          
-          postedBy:{
-               //relation with user table
-               type:String,
-               ref:'User',
-               default:null,
-               required:false,
+     size:{
+          type:mongoose.Schema.ObjectId,
+          ref:'Sizes',
+          default:null,
+          required:false,
+          validator: function(value) {
+               //must be character and number 
+               return validator.isAlphanumeric(value.replace(/\s/g, ''));
           },
-          created_at:{
-               type:Date,
-               required:false,
-               default:null,
-               /*validator: function(value) {
-                    // Require at least one uppercase le tter, one lowercase letter, one special character and one number
-                    return validator.isDate(value);
-               }*/
-          },
-          updated_at:{
-               type:Date,
-               required:false,
-               default:null,
-               /*validator: function(value) {
-                    // Require at least one uppercase le tter, one lowercase letter, one special character and one number
-                    return validator.isDate(value);
-               }*/
-          },
-          deleted_at:{
-               type:Date,
-               required:false,
-               default:null,
-               /*validator: function(value) {
-                    // Require at least one uppercase le tter, one lowercase letter, one special character and one number
-                    return validator.isDate(value);
-               }*/
-          },
-          
-
-
      },
+     user:{
+          type:mongoose.Schema.ObjectId,
+          ref:'user',
+          default:null,
+          required:true,
+          validator: function(value) {
+               //must be character and number 
+               return validator.isAlphanumeric(value.replace(/\s/g, ''));
+          }
+     },
+     ratings:[
+          {
+               star:Number,
+               comment:String,
+               postedBy:{
+                    type:mongoose.Schema.ObjectId,
+                    ref:'User',
+                    default:null,
+                    required:false,
+               },
+               created_at:{
+                    type:Date,
+                    required:false,
+                    default:null,
+                    validator: function(value) {
+                         return validator.isDate(value);
+                    }
+               },
+               updated_at:{
+                    type:Date,
+                    required:false,
+                    default:null,
+                    validator: function(value) {
+                         // Require at least one uppercase le tter, one lowercase letter, one special character and one number
+                         return validator.isDate(value);
+                    }
+               },
+               deleted_at:{
+                    type:Date,
+                    required:false,
+                    default:null,
+                    validator: function(value) {
+                         // Require at least one uppercase le tter, one lowercase letter, one special character and one number
+                         return validator.isDate(value);
+                    }
+               },
+          }
+     ],
      stock_status:{
           type:Number,
           required:[true,'product stock status is required'],
@@ -224,32 +222,31 @@ const productSchema=new mongoose.Schema({
           type:Date,
           required:false,
           default:null,
-          /*validator: function(value) {
+          validator: function(value) {
                // Require at least one uppercase le tter, one lowercase letter, one special character and one number
                return validator.isDate(value);
-          }*/
+          }
      },
      user_update:{
-          //relation with user table
-          type:String,
+          type:mongoose.Schema.ObjectId,
           ref:'User',
           default:null,
           required:false,
-          /*validator: function(value) {
-               // int and numeric
-               return validator.isNumeric(value.replace(/\s/g, '')) && validator.isInt(value.replace(/\s/g, ''));
-          }*/
+          validator: function(value) {
+               //must be character and number 
+               return validator.isAlphanumeric(value.replace(/\s/g, ''));
+          }
      }, 
      user_delete:{
           //relation with user table
-          type:String,
+          type:mongoose.Schema.ObjectId,
           ref:'User',
           required:false,
           default:null,
-          /*validator: function(value) {
-               // int and numeric
-               return validator.isNumeric(value.replace(/\s/g, '')) && validator.isInt(value.replace(/\s/g, ''));
-          }*/
+          validator: function(value) {
+               //must be character and number 
+               return validator.isAlphanumeric(value.replace(/\s/g, ''));
+          }
      }
 },{
      timeseries:true

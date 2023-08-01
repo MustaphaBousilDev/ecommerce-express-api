@@ -81,39 +81,19 @@ const getAllImgsProduct=asyncHandler(async(req,res)=>{
 const updateImgsProduct = asyncHandler(async (req, res) => {
      const {id}=req.params 
      let picture =req.file;
-     console.log('picture')
-     console.log(picture)
      validateMongoDbId(id);
-     //console.log('fuck you')
-     //get image has this id and get the cloudinary_id
-     
-     /* {
-          
-          const ImagesDB= await Images.findByIdAndUpdate(id,{
-               name:req?.body?.name,
-               category:req?.body?.category,
-               user_updated:req?.body?.user_updated,
-               slug:req?.body?.slug,
-               status:req?.body?.status,
-     },{new: true});*/
      try{
           const img=await Images.findById(id)
           const cloudinary_ids=img.cloudinary_id
           //delete from cloudinary 
-          console.log(cloudinary_ids)
           cloudinary.uploader.destroy(cloudinary_ids)
-          console.log('rtoortort')
           const result = await cloudinary.uploader.upload(picture.path);
-          console.log('new img')
-          console.log(result)
           const imgsUpdated=await Images.findByIdAndUpdate(id,{
                picture:result.secure_url,
                cloudinary_id:result.public_id,
                user_updated:req.user._id,
                
           },{new: true})
-          console.log('imgsUpdated')
-          console.log(imgsUpdated)
           fs.unlinkSync(picture.path);
           res.json(imgsUpdated)
      } catch (error) {
