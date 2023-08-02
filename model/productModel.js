@@ -139,26 +139,18 @@ const productSchema=new mongoose.Schema({
                }
           }
      ],
-     color:{
-          type:mongoose.Schema.ObjectId,
-          ref:'Colors',
-          default:null,
-          required:false,
-          validator: function(value) {
-               //must be character and number 
-               return validator.isAlphanumeric(value.replace(/\s/g, ''));
-          },
-     },
-     size:{
-          type:mongoose.Schema.ObjectId,
-          ref:'Sizes',
-          default:null,
-          required:false,
-          validator: function(value) {
-               //must be character and number 
-               return validator.isAlphanumeric(value.replace(/\s/g, ''));
-          },
-     },
+     sizes:[
+          {
+               type:mongoose.Schema.ObjectId,
+               ref:'Sizes',
+               default:null,
+               required:false,
+               validator: function(value) {
+                    //must be character and number 
+                    return validator.isAlphanumeric(value.replace(/\s/g, ''));
+               },
+          }
+     ],
      user:{
           type:mongoose.Schema.ObjectId,
           ref:'user',

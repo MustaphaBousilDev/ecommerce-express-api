@@ -1,5 +1,8 @@
 const slugify = require("slugify");
 const Product=require('../model/productModel')
+const Colors=require('../model/colorsModel')
+const Sizes=require('../model/sizesModel')
+const Tags=require('../model/tagsProduct')
 const asyncHandler= require('express-async-handler')
 const validateMongoDbId = require('../helpers/validateMongoDB')
 const {
@@ -16,7 +19,21 @@ const {
 
 const createProduct=asyncHandler(async(req,res)=>{
      try{
-          const {title,short_description,description,r_price,s_price,SKU,status,stock_total,bareCode,images,color,size,stock_status}=req.body   
+          const 
+          {title,
+          short_description,
+          description,
+          r_price,
+          s_price,
+          SKU,
+          stock_total,
+          bareCode,
+          sizes,
+          made,
+          subCategory,
+          brand,
+          tags}=req.body   
+          
           if(req.body.title) req.body.slug=slugify(req.body.title)
           if(!validateString(title)){return res.status(400).json({msg:"Error title not fucking valid"})}
           if(!validateString(description,10,400)){return res.status(400).json({msg:'invalid description'})}
@@ -24,14 +41,62 @@ const createProduct=asyncHandler(async(req,res)=>{
           if(!validateNumber(r_price)){return res.status(400).json({msg:'invalide regular price number'})}
           if(!validateNumber(s_price)){return res.status(400).json({msg:'invalide regular price number'})}
           if(!validateString(SKU)){return res.status(400).json({msg:'invalid sku'})}
-          if(!validateStatus(status)){return res.status(400).json({msg:'status must nbe 0 or 1'})}
           if(!validateNumberIntegers(stock_total)){return res.status(400).json({msg:"invalid stock totak"})}
           if(!validateString(bareCode)){return res.status(400).json({msg:"invalid barcode"})}
-          if(!validateColorEnum(color)){return res.status(400).json({msg:"invalid color your choose it"})}
-          if(!validateSizeEnum(size)){return res.status(400).json({msg:'invalid size you choose it'})}
-          if(!validateStatus(stock_status)){return res.status(400).json({msg:'invalid stock status'})}
-          const newProduct=await Product.create(req.body)     
+          const newProduct=await Product.create({
+            title:title,
+            slug:req.body.slug,
+            short_description:short_description,
+            description:description,
+            r_price:r_price,
+            s_price:s_price,
+            SKU:SKU,
+            stock_total:stock_total,
+            bareCode:bareCode,
+            made:made,
+            subCategory:subCategory,
+            brand:brand,
+            user:req.user._id
+          })   
+          //upddate sizes of products 
+          let updateProduct
+          sizes.forEach(async(size)=>{
+            updateProduct=await Product.findByIdAndUpdate(newProduct._id,{$push:{sizes:size.size}})
+            
+          })
+
+          //update product in sizes 
+          sizes.forEach(async(size)=>{
+            updateSize=await Sizes.findByIdAndUpdate(size.size,{$push:{products:newProduct._id}})
+            size.colors.forEach(async(color)=>{
+              updateColor=await Sizes.findByIdAndUpdate(size.size,{$push:{colors:color.color}})
+            })
+            //update colors in sizes
+          })
+          
+              
+          //res.json(newProduct)
+          //store tags in  tags collection
+          let newTag
+          tags.forEach(async(tag)=>{
+            newTag=await Tags.create({
+              name:tag,
+              products:newProduct._id,
+              slug:slugify(tag),
+              user:req.user._id
+            })
+
+            //update tags in product
+            await Product.findByIdAndUpdate(newProduct._id,{$push:{tags:newTag._id}})
+          })
+
+          //update tags in product
+          
+
+
+
           res.json(newProduct)
+
      }catch(error){
           throw new Error(error)
      }

@@ -37,6 +37,28 @@ var ColorSchema = new mongoose.Schema(
                return validator.isAlpha(value.replace(/\s/g, ""));
           }
      },
+     sizes: [
+          {
+               type: mongoose.Schema.ObjectId,
+               ref: "Sizes",
+               default: null,
+               validator: function(value) {
+                    //must be character and number
+                    return validator.isAlphanumeric(value.replace(/\s/g, ''));
+               },
+          },
+     ],
+     products: [
+          {
+               type: mongoose.Schema.ObjectId,
+               ref: "Product",
+               default: null,
+               validator: function(value) {
+                    //must be character and number
+                    return validator.isAlphanumeric(value.replace(/\s/g, ''));
+               },
+          },
+     ],
      status: {
           type: Number,
           required: [true, "color status is required"],

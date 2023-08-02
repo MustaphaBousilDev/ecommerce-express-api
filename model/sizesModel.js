@@ -4,16 +4,13 @@ const validator = require("validator");
 // Declare the Schema of the Mongo model
 var SizeSchema = new mongoose.Schema(
   {
-    name: {
+     name: {
           type: String,
           required: [true, "size name is required"],
           unique: [true, "size name must be unique"],
           index: true,
           lowercase: true,
-          trim: true,
-          validator: (value) => {
-               return validator.isAlpha(value.replace(/\s/g, ""));
-          },
+          
      },
      slug: {
           type: String,
@@ -37,6 +34,28 @@ var SizeSchema = new mongoose.Schema(
                return validator.isIn(value, [0,1]);
           }
      },
+     products: [
+          {
+               type: mongoose.Schema.ObjectId,
+               ref: "Product",
+               default: null,
+               validator: function(value) {
+                    //must be character and number 
+                    return validator.isAlphanumeric(value.replace(/\s/g, ''));
+               },
+          },
+     ],
+     colors: [
+          {
+               type: mongoose.Schema.ObjectId,
+               ref: "Colors",
+               default: null,
+               validator: function(value) {
+                    //must be character and number
+                    return validator.isAlphanumeric(value.replace(/\s/g, ''));
+               },
+          },
+     ],
      user: {
           type: mongoose.Schema.ObjectId,
           ref: "User",
