@@ -39,25 +39,29 @@ var ColorSchema = new mongoose.Schema(
      },
      sizes: [
           {
-               type: mongoose.Schema.ObjectId,
-               ref: "Sizes",
-               default: null,
-               validator: function(value) {
-                    //must be character and number
-                    return validator.isAlphanumeric(value.replace(/\s/g, ''));
+               size:{
+                    type: mongoose.Schema.ObjectId,
+                    ref: "Sizes",
+                    default: null,
+                    validator: function(value) {
+                         //must be character and number
+                         return validator.isAlphanumeric(value.replace(/\s/g, ''));
+                    },
                },
-          },
-     ],
-     products: [
-          {
-               type: mongoose.Schema.ObjectId,
-               ref: "Product",
-               default: null,
-               validator: function(value) {
-                    //must be character and number
-                    return validator.isAlphanumeric(value.replace(/\s/g, ''));
+               quantity:{
+                    type:Number,
+                    default:0
                },
-          },
+               product:{
+                    type: mongoose.Schema.ObjectId,
+                    ref: "Product",
+                    default: null,
+                    validator: function(value) {
+                         //must be character and number
+                         return validator.isAlphanumeric(value.replace(/\s/g, ''));
+                    },
+               }
+          }
      ],
      status: {
           type: Number,

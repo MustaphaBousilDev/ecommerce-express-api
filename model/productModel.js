@@ -139,16 +139,31 @@ const productSchema=new mongoose.Schema({
                }
           }
      ],
-     sizes:[
+     SizesColors:[
           {
-               type:mongoose.Schema.ObjectId,
-               ref:'Sizes',
-               default:null,
-               required:false,
-               validator: function(value) {
-                    //must be character and number 
-                    return validator.isAlphanumeric(value.replace(/\s/g, ''));
+               size:{
+                    type:mongoose.Schema.ObjectId,
+                    ref:'Sizes',
+                    default:null,
+                    required:false,
+                    validator: function(value) {
+                         //must be character and number 
+                         return validator.isAlphanumeric(value.replace(/\s/g, ''));
+                    },
                },
+               colors:[
+                    {
+                         color:{
+                              type:mongoose.Schema.ObjectId,
+                              ref:'Colors',
+                              default:null
+                         },
+                         quantity:{
+                              type:Number,
+                              default:0
+                         }
+                    }
+               ]
           }
      ],
      user:{
@@ -164,7 +179,7 @@ const productSchema=new mongoose.Schema({
      ratings:[
           {
                star:Number,
-               comment:String,
+               comment:String, 
                postedBy:{
                     type:mongoose.Schema.ObjectId,
                     ref:'User',

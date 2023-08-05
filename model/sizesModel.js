@@ -55,6 +55,7 @@ var SizeSchema = new mongoose.Schema(
                     return validator.isAlphanumeric(value.replace(/\s/g, ''));
                },
           },
+          
      ],
      user: {
           type: mongoose.Schema.ObjectId,

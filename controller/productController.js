@@ -19,20 +19,8 @@ const {
 
 const createProduct=asyncHandler(async(req,res)=>{
      try{
-          const 
-          {title,
-          short_description,
-          description,
-          r_price,
-          s_price,
-          SKU,
-          stock_total,
-          bareCode,
-          sizes,
-          made,
-          subCategory,
-          brand,
-          tags}=req.body   
+          const {title,short_description,description,r_price,s_price,
+          SKU,stock_total,bareCode,sizes,made,subCategory,brand,tags}=req.body   
           
           if(req.body.title) req.body.slug=slugify(req.body.title)
           if(!validateString(title)){return res.status(400).json({msg:"Error title not fucking valid"})}
@@ -59,20 +47,58 @@ const createProduct=asyncHandler(async(req,res)=>{
             user:req.user._id
           })   
           //upddate sizes of products 
-          let updateProduct
+          let updateProductSize
           sizes.forEach(async(size)=>{
-            updateProduct=await Product.findByIdAndUpdate(newProduct._id,{$push:{sizes:size.size}})
-            
+              
+              
+
+              size.colors.forEach(async(color)=>{
+              updateColor=await Product.findByIdAndUpdate({
+                _id:newProduct._id,
+                "SizesColors.size":size.size
+
+              },{
+                $push:{
+                  SizesColors:{
+                    size:size.size,
+                    colors:{
+                      color:color.color,
+                      quantity:color.quantity 
+                    }
+                  }
+                }
+              })
+            })
           })
 
           //update product in sizes 
           sizes.forEach(async(size)=>{
             updateSize=await Sizes.findByIdAndUpdate(size.size,{$push:{products:newProduct._id}})
             size.colors.forEach(async(color)=>{
-              updateColor=await Sizes.findByIdAndUpdate(size.size,{$push:{colors:color.color}})
+              updateSize=await Sizes.findByIdAndUpdate(size.size,{
+                $push:{
+                  colors:color.color,
+                }})
+
+              updateColor=await Colors.findByIdAndUpdate(color.color,{
+                $push:{
+                  sizes:{
+                    size:size.size,
+                    quantity:color.quantity,
+                    product:newProduct._id,
+                  }
+                }
+              })
             })
+            //update product from size collection 
             //update colors in sizes
+            
           })
+
+          
+
+
+
           
               
           //res.json(newProduct)
