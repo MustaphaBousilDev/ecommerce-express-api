@@ -22,6 +22,7 @@ const createProduct=asyncHandler(async(req,res)=>{
           const {title,short_description,description,r_price,s_price,
           SKU,stock_total,bareCode,sizes,made,subCategory,brand,tags}=req.body  
           console.log(tags)
+          req.body.user=req.user._id
           
           if(req.body.title) req.body.slug=slugify(req.body.title)
           if(!validateString(title)){return res.status(400).json({msg:"Error title not fucking valid"})}
@@ -32,6 +33,16 @@ const createProduct=asyncHandler(async(req,res)=>{
           if(!validateString(SKU)){return res.status(400).json({msg:'invalid sku'})}
           if(!validateNumberIntegers(stock_total)){return res.status(400).json({msg:"invalid stock totak"})}
           if(!validateString(bareCode)){return res.status(400).json({msg:"invalid barcode"})}
+          validateMongoDbId(made)
+          validateMongoDbId(req.body.user)
+          validateMongoDbId(subCategory)
+          validateMongoDbId(brand)
+          
+          //validate unique title 
+          const titleDB=await Product.findOne({title})
+          if (titleDB) return res.status(400).json({msg:'this title is exists, change it!'})
+
+
           const newProduct=await Product.create({
             title:title,
             slug:req.body.slug,
@@ -67,17 +78,18 @@ const createProduct=asyncHandler(async(req,res)=>{
               { new: true } // To return the updated document
             );
           }
-          
           //update product in sizes 
           sizes.forEach(async(size)=>{
+            //validation size
+            validateMongoDbId(size.size)
             updateSize=await Sizes.findByIdAndUpdate(size.size,{$push:{products:newProduct._id}})
             size.colors.forEach(async(color)=>{
+              validateMongoDbId(color.color)
               updateSize=await Sizes.findByIdAndUpdate(size.size,{
                 $push:{
                   colors:color.color,
                 }
               })
-
               updateColor=await Colors.findByIdAndUpdate(color.color,{
                 $push:{
                   sizes:{
@@ -87,32 +99,35 @@ const createProduct=asyncHandler(async(req,res)=>{
                   }
                 }
               })
-            })
-
-            
+            })            
           })
-
-
           //res.json(newProduct)
           //store tags in  tags collection
           let newTag
-          tags.forEach(async(tag)=>{
-            newTag=await Tags.create({
-              name:tag,
-              products:newProduct._id,
-              slug:slugify(tag),
-              user:req.user._id
-            })
-
-            //update tags in product
-            await Product.findByIdAndUpdate(newProduct._id,{$push:{tags:newTag._id}})
-          })
-
-          //update tags in product
           
-
-
-
+          tags.forEach(async(tag)=>{
+            if(!validateString(tag)){return res.status(400).json({msg:"invalid tag"})}
+            let findTags=await Tags.findOne(
+              {
+                name:tag,
+              }
+            )
+            if(findTags){
+               //get id of this tag and update in product
+                id=findTags._id
+                ProductAll=await Product.findByIdAndUpdate(newProduct._id,{$push:{tags:findTags._id}})
+            }else{
+              newTag=await Tags.create({
+                name:tag,
+                products:newProduct._id,
+                slug:slugify(tag),
+                user:req.user._id
+              })
+              ProductAll=await Product.findByIdAndUpdate(newProduct._id,{$push:{tags:newTag._id}})
+            }
+            //update tags in product
+          })
+          //update tags in product
           res.json(ProductAll)
 
      }catch(error){
