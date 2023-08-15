@@ -104,7 +104,7 @@ const createProduct=asyncHandler(async(req,res)=>{
           //res.json(newProduct)
           //store tags in  tags collection
           let newTag
-          
+          let co=0
           tags.forEach(async(tag)=>{
             if(!validateString(tag)){return res.status(400).json({msg:"invalid tag"})}
             let findTags=await Tags.findOne(
@@ -125,10 +125,14 @@ const createProduct=asyncHandler(async(req,res)=>{
               })
               ProductAll=await Product.findByIdAndUpdate(newProduct._id,{$push:{tags:newTag._id}})
             }
+            co++
+            if(co==tags.length){
+              res.json(ProductAll)
+            }
             //update tags in product
           })
           //update tags in product
-          res.json(ProductAll)
+          //res.json(ProductAll)
 
      }catch(error){
           throw new Error(error)
